@@ -114,7 +114,7 @@ export default function App() {
     longPressTimer.current = setTimeout(() => {
       setSortMode(true)
       if (navigator.vibrate) navigator.vibrate(60)
-    }, 800)
+    }, 2000)
   }
   const cancelLongPress = () => clearTimeout(longPressTimer.current)
 
