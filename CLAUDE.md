@@ -17,14 +17,11 @@
 - 미완료 상태로 하루 지난 항목에 🔄 이월 뱃지 표시
 - 프로필 사진 변경 (300px 압축 후 localStorage 저장)
 - 매일 명언 표시 (날짜 기반, 30개 목록)
-- 매일 알림 설정 (서비스워커 + Web Notifications API)
 - 완료 체크 시 🎉 컨페티 애니메이션
 
 ## localStorage 키
 - `minser-todos`: 할 일 목록 (JSON 배열)
 - `minser-profile`: 프로필 사진 (base64)
-- `minser-notif-time`: 알림 시간 ("HH:MM")
-- `minser-notif-enabled`: 알림 활성화 여부 ("true"/"false")
 
 ## 디자인 원칙
 - 색상 테마: 핑크/살구/베이지 계열 (따뜻하고 포근한 느낌)

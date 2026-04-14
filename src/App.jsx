@@ -21,14 +21,6 @@ function isCarriedOver(todo) {
   return !todo.done && todo.dateKey < todayKey
 }
 
-// 서비스워커 등록 및 알림 시간 전달
-function registerSW(time) {
-  if (!('serviceWorker' in navigator)) return
-  navigator.serviceWorker.ready.then(reg => {
-    if (reg.active) reg.active.postMessage({ type: 'SCHEDULE_NOTIFICATION', time })
-  })
-}
-
 export default function App() {
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem('minser-todos')
@@ -43,21 +35,10 @@ export default function App() {
   const [draggedId, setDraggedId] = useState(null)
   const [dragOverId, setDragOverId] = useState(null)
   const [confettiItems, setConfettiItems] = useState([])
-  const [showNotifModal, setShowNotifModal] = useState(false)
-  const [notifTime, setNotifTime] = useState(() => localStorage.getItem('minser-notif-time') || '09:00')
-  const [notifEnabled, setNotifEnabled] = useState(() => localStorage.getItem('minser-notif-enabled') === 'true')
 
   const fileInputRef = useRef(null)
   const longPressTimer = useRef(null)
   const touchDragRef = useRef(null)
-
-  // 서비스워커 등록
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {})
-    }
-    if (notifEnabled) registerSW(notifTime)
-  }, [])
 
   useEffect(() => {
     localStorage.setItem('minser-todos', JSON.stringify(todos))
@@ -110,7 +91,6 @@ export default function App() {
 
   const deleteTodo = (id) => setTodos(todos.filter(t => t.id !== id))
 
-  // 드래그 (데스크탑)
   const handleDragStart = (id) => setDraggedId(id)
   const handleDragOver = (e, id) => { e.preventDefault(); setDragOverId(id) }
   const handleDrop = (targetId) => {
@@ -176,25 +156,6 @@ export default function App() {
     reader.readAsDataURL(file)
   }
 
-  const saveNotification = async () => {
-    if (!('Notification' in window)) { alert('이 브라우저는 알림을 지원하지 않아요.'); return }
-    const permission = await Notification.requestPermission()
-    if (permission !== 'granted') { alert('알림 권한이 거부됐어요. 브라우저 설정에서 허용해주세요.'); return }
-    localStorage.setItem('minser-notif-time', notifTime)
-    localStorage.setItem('minser-notif-enabled', 'true')
-    setNotifEnabled(true)
-    registerSW(notifTime)
-    setShowNotifModal(false)
-    alert(`매일 ${notifTime}에 알림을 보내드릴게요! 💕`)
-  }
-
-  const disableNotification = () => {
-    localStorage.setItem('minser-notif-enabled', 'false')
-    setNotifEnabled(false)
-    registerSW('')
-    setShowNotifModal(false)
-  }
-
   const QUOTES = [
     '오늘 하루도 충분히 잘하고 있어요 🌸',
     '"완벽한 날은 없어. 그냥 오늘을 살아." — 영화 《어바웃 타임》',
@@ -245,44 +206,8 @@ export default function App() {
             }
           `}</style>
           {confettiItems.map(item => (
-            <div key={item.id} style={{
-              position: 'absolute', top: 0, left: item.left,
-              fontSize: item.size,
-              animation: `confettiFall ${item.duration} ${item.delay} ease-in forwards`,
-            }}>{item.emoji}</div>
+            <div key={item.id} style={{ position: 'absolute', top: 0, left: item.left, fontSize: item.size, animation: `confettiFall ${item.duration} ${item.delay} ease-in forwards` }}>{item.emoji}</div>
           ))}
-        </div>
-      )}
-
-      {/* 알림 설정 모달 */}
-      {showNotifModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
-          onClick={() => setShowNotifModal(false)}>
-          <div style={{ background: 'white', borderRadius: '24px', padding: '28px 24px', width: '100%', maxWidth: '340px', boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '28px', textAlign: 'center', marginBottom: '8px' }}>🔔</div>
-            <div style={{ fontSize: '18px', fontWeight: '800', color: '#5D2A42', textAlign: 'center', marginBottom: '6px' }}>매일 알림 설정</div>
-            <div style={{ fontSize: '13px', color: '#B07090', textAlign: 'center', marginBottom: '24px' }}>앱이 열려있을 때 알림이 와요</div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: '#8B4D6A', display: 'block', marginBottom: '8px' }}>알림 시간</label>
-              <input
-                type="time"
-                value={notifTime}
-                onChange={e => setNotifTime(e.target.value)}
-                style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid #FFE0ED', fontSize: '20px', textAlign: 'center', outline: 'none', color: '#5D2A42', fontWeight: '700', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            <button onClick={saveNotification} style={{ width: '100%', padding: '14px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #FF8FAB, #FFBE98)', color: 'white', fontSize: '16px', fontWeight: '700', cursor: 'pointer', marginBottom: '10px' }}>
-              💕 알림 설정하기
-            </button>
-            {notifEnabled && (
-              <button onClick={disableNotification} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid #FFE0ED', background: 'white', color: '#C97A96', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
-                알림 끄기
-              </button>
-            )}
-          </div>
         </div>
       )}
 
@@ -314,10 +239,6 @@ export default function App() {
               <div style={{ fontSize: '24px', fontWeight: '800', color: '#5D2A42', lineHeight: 1.2, marginTop: '6px' }}>민서맘</div>
               <div style={{ fontSize: '20px', fontWeight: '700', color: '#8B4D6A' }}>투두리스트 💕</div>
             </div>
-            {/* 알림 버튼 */}
-            <button onClick={() => setShowNotifModal(true)} style={{ position: 'absolute', top: 0, right: 0, background: notifEnabled ? '#FF8FAB' : 'rgba(255,255,255,0.6)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-              {notifEnabled ? '🔔' : '🔕'}
-            </button>
           </div>
 
           <div style={{ background: 'rgba(255,255,255,0.6)', borderRadius: '16px', padding: '14px 16px', backdropFilter: 'blur(4px)' }}>
