@@ -35,6 +35,7 @@ export default function App() {
   const [draggedId, setDraggedId] = useState(null)
   const [dragOverId, setDragOverId] = useState(null)
   const [confettiItems, setConfettiItems] = useState([])
+  const [editingCategoryId, setEditingCategoryId] = useState(null)
 
   const fileInputRef = useRef(null)
   const longPressTimer = useRef(null)
@@ -90,6 +91,11 @@ export default function App() {
   }
 
   const deleteTodo = (id) => setTodos(todos.filter(t => t.id !== id))
+
+  const updateCategory = (id, category) => {
+    setTodos(todos.map(t => t.id === id ? { ...t, category } : t))
+    setEditingCategoryId(null)
+  }
 
   const handleDragStart = (id) => setDraggedId(id)
   const handleDragOver = (e, id) => { e.preventDefault(); setDragOverId(id) }
@@ -326,11 +332,25 @@ export default function App() {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '15px', color: '#5D2A42', textDecoration: todo.done ? 'line-through' : 'none', marginBottom: '4px', wordBreak: 'break-word' }}>{todo.text}</div>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '99px', background: CATEGORY_COLORS[todo.category] || '#FFD6E7', color: '#5D2A42', fontWeight: '700' }}>{CATEGORY_EMOJI[todo.category]} {todo.category}</span>
-                      {isCarriedOver(todo) && <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '99px', background: '#FFE0ED', color: '#C97A96', fontWeight: '700' }}>🔄 이월</span>}
-                      <span style={{ fontSize: '11px', color: '#ccc' }}>{todo.createdAt}</span>
-                    </div>
+                    {editingCategoryId === todo.id ? (
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                        {Object.keys(CATEGORY_COLORS).map(cat => (
+                          <button key={cat} onClick={() => updateCategory(todo.id, cat)} style={{ padding: '4px 10px', borderRadius: '99px', border: `2px solid ${CATEGORY_COLORS[cat]}`, background: todo.category === cat ? CATEGORY_COLORS[cat] : 'white', color: '#5D2A42', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                            {CATEGORY_EMOJI[cat]} {cat}
+                          </button>
+                        ))}
+                        <button onClick={() => setEditingCategoryId(null)} style={{ padding: '4px 10px', borderRadius: '99px', border: '2px solid #eee', background: 'white', color: '#bbb', fontSize: '12px', cursor: 'pointer' }}>취소</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span
+                          onClick={() => !sortMode && setEditingCategoryId(todo.id)}
+                          style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '99px', background: CATEGORY_COLORS[todo.category] || '#FFD6E7', color: '#5D2A42', fontWeight: '700', cursor: sortMode ? 'default' : 'pointer' }}
+                        >{CATEGORY_EMOJI[todo.category]} {todo.category} {!sortMode && '✎'}</span>
+                        {isCarriedOver(todo) && <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '99px', background: '#FFE0ED', color: '#C97A96', fontWeight: '700' }}>🔄 이월</span>}
+                        <span style={{ fontSize: '11px', color: '#ccc' }}>{todo.createdAt}</span>
+                      </div>
+                    )}
                   </div>
 
                   {!sortMode && (
