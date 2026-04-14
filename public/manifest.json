@@ -1,0 +1,11 @@
+{
+  "name": "민서맘 투두리스트",
+  "short_name": "민서맘",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFBFC",
+  "theme_color": "#FFD6E7",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
